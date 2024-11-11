@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('p2.jpg');
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            margin-top: 5%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        button {
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Management</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Username</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="userTable">
+                <!-- User rows will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchUsers() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please log in first.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('/users', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const users = await response.json();
+                    const userTable = document.getElementById('userTable');
+                    userTable.innerHTML = '';
+
+                    if (users.length === 0) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td colspan="5">No users found.</td>`;
+                        userTable.appendChild(row);
+                    } else {
+                        users.forEach(user => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${user.name}</td>
+                                <td>${user.username}</td>
+                                <td>${user.age}</td>
+                                <td>${user.gender}</td>
+                                <td><button onclick="deleteUser(${user.id})">Delete</button></td>
+                            `;
+                            userTable.appendChild(row);
+                        });
+                    }
+                } else {
+                    alert('Failed to fetch users. Please log in again.');
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                alert('An error occurred while fetching users.');
+            }
+        }
+
+        async function deleteUser(id) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please log in first.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/users/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    alert('User deleted successfully');
+                    fetchUsers();
+                } else {
+                    alert('Failed to delete user');
+                }
+            } catch (error) {
+                alert('An error occurred while deleting the user.');
+            }
+        }
+
+
+        window.onload = fetchUsers;
+                // Delete a user
+app.delete('/users/:id', authenticateToken, (req, res) => {
+    const userId = req.params.id;
+    db.query('DELETE FROM users WHERE id = ?', [userId], (err, results) => {
+        if (err) return res.status(500).send('Database error: ' + err);
+        if (results.affectedRows === 0) {
+            return res.status(404).send('User not found.');
+        }
+        res.send('User deleted successfully');
+    });
+});
+
+    </script>
+</body>
+</html>
